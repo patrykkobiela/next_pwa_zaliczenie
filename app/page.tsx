@@ -6,12 +6,13 @@ import { useState } from 'react';
 
 export default function Home() {
   const [sortBy, setSortBy] = useState('default');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('Wszystkie');
 
-  const categories = ['all', ...new Set(products.map(p => p.category))];
+  // Pobierz unikalne kategorie z produktów
+  const categories = ['Wszystkie', ...Array.from(new Set(products.map(p => p.category)))];
 
   const filteredProducts = products.filter(p => 
-    selectedCategory === 'all' || p.category === selectedCategory
+    selectedCategory === 'Wszystkie' || p.category === selectedCategory
   );
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -43,16 +44,22 @@ export default function Home() {
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
             {[
               { name: 'Elektronika', icon: '💻', color: 'bg-blue-100' },
-              { name: 'Moda', icon: '👔', color: 'bg-pink-100' },
-              { name: 'Dom', icon: '🏠', color: 'bg-green-100' },
-              { name: 'Sport', icon: '⚽', color: 'bg-orange-100' },
-              { name: 'Dziecko', icon: '👶', color: 'bg-yellow-100' },
-              { name: 'Uroda', icon: '💄', color: 'bg-purple-100' },
+              { name: 'Telefony', icon: '📱', color: 'bg-indigo-100' },
+              { name: 'Gaming', icon: '🎮', color: 'bg-purple-100' },
+              { name: 'RTV', icon: '📺', color: 'bg-red-100' },
+              { name: 'Foto', icon: '📷', color: 'bg-yellow-100' },
+              { name: 'Audio', icon: '🎧', color: 'bg-green-100' },
             ].map((cat) => (
-              <div key={cat.name} className={`${cat.color} rounded-lg p-4 text-center cursor-pointer hover:shadow-md transition-shadow`}>
+              <button
+                key={cat.name}
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`${cat.color} rounded-lg p-4 text-center cursor-pointer hover:shadow-md transition-all hover:scale-105 ${
+                  selectedCategory === cat.name ? 'ring-2 ring-allegro-orange' : ''
+                }`}
+              >
                 <div className="text-3xl mb-2">{cat.icon}</div>
                 <div className="text-sm font-semibold text-gray-700">{cat.name}</div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -62,20 +69,20 @@ export default function Home() {
         {/* Filters and Sorting */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 flex-wrap">
               <span className="text-gray-700 font-semibold">Kategoria:</span>
               <div className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                       selectedCategory === cat
-                        ? 'bg-allegro-orange text-white'
+                        ? 'bg-allegro-orange text-white shadow-md'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {cat === 'all' ? 'Wszystkie' : cat}
+                    {cat}
                   </button>
                 ))}
               </div>
@@ -102,15 +109,30 @@ export default function Home() {
         <div className="mb-4">
           <p className="text-gray-600">
             <span className="font-semibold">{sortedProducts.length}</span> produktów
+            {selectedCategory !== 'Wszystkie' && (
+              <span> w kategorii <span className="font-semibold">{selectedCategory}</span></span>
+            )}
           </p>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {sortedProducts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {sortedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-xl text-gray-600 mb-4">Nie znaleziono produktów w tej kategorii</p>
+            <button
+              onClick={() => setSelectedCategory('Wszystkie')}
+              className="bg-allegro-orange text-white px-6 py-2 rounded-lg hover:bg-allegro-orange-dark transition-colors"
+            >
+              Pokaż wszystkie produkty
+            </button>
+          </div>
+        )}
 
         {/* Promotional Banner Bottom */}
         <div className="mt-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-8 text-white text-center">
