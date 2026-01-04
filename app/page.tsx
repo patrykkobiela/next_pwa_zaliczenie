@@ -1,39 +1,125 @@
+'use client';
+
 import { products } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
+import { useState } from 'react';
 
 export default function Home() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          Witaj w Allegro!
-        </h1>
-        <p className="text-gray-600">
-          Znajdź najlepsze produkty w najlepszych cenach
-        </p>
-      </div>
+  const [sortBy, setSortBy] = useState('default');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-      <div className="mb-6">
-        <div className="flex items-center space-x-4 overflow-x-auto pb-2">
-          <button className="px-4 py-2 bg-allegro-orange text-white rounded-full whitespace-nowrap">
-            Wszystkie
-          </button>
-          <button className="px-4 py-2 bg-white text-gray-700 rounded-full whitespace-nowrap hover:bg-gray-100">
-            Elektronika
-          </button>
-          <button className="px-4 py-2 bg-white text-gray-700 rounded-full whitespace-nowrap hover:bg-gray-100">
-            Audio
-          </button>
-          <button className="px-4 py-2 bg-white text-gray-700 rounded-full whitespace-nowrap hover:bg-gray-100">
-            Foto
-          </button>
+  const categories = ['all', ...new Set(products.map(p => p.category))];
+
+  const filteredProducts = products.filter(p => 
+    selectedCategory === 'all' || p.category === selectedCategory
+  );
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch(sortBy) {
+      case 'price-asc': return a.price - b.price;
+      case 'price-desc': return b.price - a.price;
+      case 'rating': return b.rating - a.rating;
+      case 'popular': return b.reviewCount - a.reviewCount;
+      default: return 0;
+    }
+  });
+
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      {/* Promotional Banner */}
+      <div className="bg-gradient-to-r from-allegro-orange to-orange-400 text-white py-8">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-bold mb-2">Witaj na Allegro!</h1>
+          <p className="text-xl">Znajdź najlepsze produkty w najlepszych cenach</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+      {/* Quick Categories */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Kategorie popularne</h2>
+          </div>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {[
+              { name: 'Elektronika', icon: '💻', color: 'bg-blue-100' },
+              { name: 'Moda', icon: '👔', color: 'bg-pink-100' },
+              { name: 'Dom', icon: '🏠', color: 'bg-green-100' },
+              { name: 'Sport', icon: '⚽', color: 'bg-orange-100' },
+              { name: 'Dziecko', icon: '👶', color: 'bg-yellow-100' },
+              { name: 'Uroda', icon: '💄', color: 'bg-purple-100' },
+            ].map((cat) => (
+              <div key={cat.name} className={`${cat.color} rounded-lg p-4 text-center cursor-pointer hover:shadow-md transition-shadow`}>
+                <div className="text-3xl mb-2">{cat.icon}</div>
+                <div className="text-sm font-semibold text-gray-700">{cat.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Filters and Sorting */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-700 font-semibold">Kategoria:</span>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      selectedCategory === cat
+                        ? 'bg-allegro-orange text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {cat === 'all' ? 'Wszystkie' : cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <span className="text-gray-700 font-semibold whitespace-nowrap">Sortuj:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-allegro-orange"
+              >
+                <option value="default">Trafność</option>
+                <option value="price-asc">Cena: od najniższej</option>
+                <option value="price-desc">Cena: od najwyższej</option>
+                <option value="rating">Najlepiej oceniane</option>
+                <option value="popular">Najpopularniejsze</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Results count */}
+        <div className="mb-4">
+          <p className="text-gray-600">
+            <span className="font-semibold">{sortedProducts.length}</span> produktów
+          </p>
+        </div>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {sortedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+
+        {/* Promotional Banner Bottom */}
+        <div className="mt-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-8 text-white text-center">
+          <h2 className="text-2xl font-bold mb-2">Dołącz do Allegro Smart!</h2>
+          <p className="mb-4">Darmowa dostawa i wiele innych korzyści</p>
+          <button className="bg-white text-purple-600 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors">
+            Sprawdź Smart!
+          </button>
+        </div>
       </div>
     </div>
   );
