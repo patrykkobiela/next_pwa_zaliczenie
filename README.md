@@ -14,11 +14,13 @@ Aplikacja PWA (Progressive Web App) inspirowana Allegro, stworzona w Next.js z T
 ## Instalacja
 
 1. Zainstaluj zależności:
+
 ```bash
 npm install
 ```
 
 2. Uruchom serwer deweloperski:
+
 ```bash
 npm run dev
 ```
